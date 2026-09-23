@@ -2,9 +2,139 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>HEVC/HDR 直播播放器</title>
-  <link rel="stylesheet" href="./styles.css">
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --card: #151821;
+      --card2: #1f2432;
+      --line: #2a3040;
+      --pink: #ff3358;
+      --yellow: #ffcc00;
+      --text: #f8fafc;
+      --muted: #9aa1b2;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .page {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .header { text-align: center; }
+    .header h1 { margin: 0 0 5px 0; font-size: 20px; }
+    .subtitle { margin: 0; font-size: 12px; color: var(--muted); }
+
+    /* 播放器容器自适应宽高适配 */
+    .player-container {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .video {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      max-height: 70vh;
+      background: #000;
+      display: block;
+      object-fit: contain;
+    }
+
+    /* 设置面板样式 */
+    .stream-panel {
+      border-top: 1px solid var(--line);
+      background: var(--card2);
+      padding: 10px 15px;
+    }
+    .stream-panel__summary {
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--yellow);
+    }
+    .stream-form {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .stream-form__label { font-size: 12px; color: var(--muted); }
+    .stream-form__row { display: flex; gap: 8px; }
+    .stream-form__input {
+      flex: 1;
+      padding: 8px 12px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    .stream-form__submit {
+      padding: 0 16px;
+      background: var(--pink);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .stream-form__proxy {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .stream-options, .controls {
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .controls select, .controls button {
+      padding: 6px 12px;
+      background: var(--card2);
+      border: 1px solid var(--line);
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .controls button:hover { background: var(--line); }
+    .status {
+      padding: 8px 15px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      background: var(--bg);
+      word-break: break-all;
+    }
+  </style>
   <script defer src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script defer src="./player.js"></script>
 </head>
@@ -23,9 +153,8 @@
         webkit-playsinline
         crossorigin="anonymous"
         preload="none"
-        poster=""
       ></video>
-      <details id="streamPanel" class="stream-panel">
+      <details id="streamPanel" class="stream-panel" open>
         <summary class="stream-panel__summary">播放源设置</summary>
         <form id="streamForm" class="stream-form" autocomplete="off">
           <label for="streamInput" class="stream-form__label">自定义流地址或 key</label>
@@ -43,7 +172,8 @@
             <button class="stream-form__submit" type="submit">播放</button>
           </div>
           <label class="stream-form__proxy">
-            <input id="proxyToggle" type="checkbox" checked />
+            <!-- 默认取消勾选（不使用本地代理） -->
+            <input id="proxyToggle" type="checkbox" />
             使用本地代理（绕过 CORS）
           </label>
         </form>
@@ -60,8 +190,9 @@
         <button id="reloadButton" type="button">重新载入</button>
         <button id="fullscreenButton" type="button">宽屏</button>
       </div>
-      <div id="status" class="status" role="status"></div>
+      <div id="status" class="status" role="status">就绪</div>
     </section>
   </main>
 </body>
 </html>
+```<FollowUp></FollowUp>
